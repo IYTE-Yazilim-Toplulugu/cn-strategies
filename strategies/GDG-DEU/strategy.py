@@ -236,6 +236,7 @@ class TradeBotStrategy(BaseStrategy):
             ml_feat = self._prepare_ml_features(df).iloc[[-1]]
             ml_feat_scaled = self.scaler.transform(ml_feat)
             action, _ = self.ppo_model.predict(ml_feat_scaled)
+            action = int(action)  # numpy array -> int scalar (SB3 array döndürür)
             
             # Action Mapping
             # 0: Strong Short, 1: Short, 2: Neutral, 3: Long, 4: Strong Long
