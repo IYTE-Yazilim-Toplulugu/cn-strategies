@@ -170,6 +170,8 @@ class TradeBotStrategy(BaseStrategy):
         self.capital = INITIAL_CAPITAL
         self.active_positions, self.ppo_model, self.is_trained = {}, None, False
         self.scaler = StandardScaler()
+        self.get_data()
+        self.egit()
 
     def egit(self):
         print(f"PPO Reinforcement Learning modeli eğitiliyor (%80 eğitim / %20 test ayrımı)...")
@@ -296,6 +298,6 @@ class TradeBotStrategy(BaseStrategy):
 if __name__ == '__main__':
     print("\n--- Testing PPO Strategy on Local Dataset ---")
     bot = TradeBotStrategy()
-    bot.get_data()
-    bot.egit()
+    #bot.get_data()
+    #bot.egit()
     backtest.run(strategy=bot, initial_capital=INITIAL_CAPITAL).print_summary()
