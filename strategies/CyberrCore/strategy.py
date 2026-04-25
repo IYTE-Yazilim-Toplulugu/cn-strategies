@@ -1,23 +1,4 @@
-"""
-strategy6.py — Rejim-Switching Stratejisi
-==========================================
-Her phi degerinde calisir:
 
-  Rolling 30-gun AC (phi tahmini):
-    >  +0.20  → MOMENTUM   : lag-1 yonunde git  (phi yuksek = trend)
-    <  -0.20  → MEAN-REV   : lag-1 tersine git  (phi negatif = geri don)
-    arada     → FLAT       : edge yok, bekle
-
-Neden bu sinirlar?
-  Stress test sonuclari:
-    phi=+0.30 → momentum ile %100 win
-    phi=-0.30 → mean-rev  ile %93 win  (stress testinde goruldu)
-    phi=±0.10 → her iki strateji de kaybediyor → flat
-
-Kaldirac: adaptif (strategy5_2 ile ayni mantik)
-  vol20 < vol_median → 10x
-  vol20 >= vol_median → 5x
-"""
 
 from cnlib.base_strategy import BaseStrategy
 from cnlib import backtest
