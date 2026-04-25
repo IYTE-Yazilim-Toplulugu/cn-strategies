@@ -34,7 +34,9 @@ MAX_DRAWDOWN_HALT    = 0.45
 # 2. FEATURE ENGINE
 # ==========================================
 def compute_atr(df, period=ATR_PERIOD):
-    high, low, close = df['High'], df['Low'], df['Close']
+    high  = df['High'].squeeze()
+    low   = df['Low'].squeeze()
+    close = df['Close'].squeeze()
     prev_close = close.shift(1)
     tr = pd.concat([high - low, (high - prev_close).abs(), (low - prev_close).abs()], axis=1).max(axis=1)
     return tr.ewm(span=period, adjust=False).mean()
@@ -59,7 +61,10 @@ def kalman_filter(prices, R=0.01, Q=0.001):
     return x
 
 def compute_features(df):
-    close, high, low, vol = df['Close'], df['High'], df['Low'], df['Volume']
+    close = df['Close'].squeeze()
+    high  = df['High'].squeeze()
+    low   = df['Low'].squeeze()
+    vol   = df['Volume'].squeeze()
     feat = {'kalman': pd.Series(kalman_filter(close.values), index=close.index)}
     feat['ema_fast'] = close.ewm(span=EMA_FAST, adjust=False).mean()
     feat['ema_mid'] = close.ewm(span=EMA_MID, adjust=False).mean()
@@ -236,7 +241,7 @@ class TradeBotStrategy(BaseStrategy):
             ml_feat = self._prepare_ml_features(df).iloc[[-1]]
             ml_feat_scaled = self.scaler.transform(ml_feat)
             action, _ = self.ppo_model.predict(ml_feat_scaled)
-            action = int(action)  # numpy array -> int scalar (SB3 array döndürür)
+            action = int(np.asarray(action).flat[0])  # SB3 bazen (1,) shape döndürür
             
             # Action Mapping
             # 0: Strong Short, 1: Short, 2: Neutral, 3: Long, 4: Strong Long
@@ -247,7 +252,7 @@ class TradeBotStrategy(BaseStrategy):
             elif action == 4: sig, leverage, risk_mult = 1, 10, 3.0
 
             if sig != 0:
-                atr_v = compute_atr(df).iloc[-1]
+                atr_v = float(np.asarray(compute_atr(df).iloc[-1]).flat[0])
                 signals_found.append((coin, sig, atr_v, leverage, risk_mult, df))
             else:
                 if coin in self.active_positions: del self.active_positions[coin]
@@ -255,7 +260,7 @@ class TradeBotStrategy(BaseStrategy):
 
         total_alloc = 0.0
         for coin, sig, atr_v, leverage, risk_mult, df in signals_found:
-            entry = df['Close'].iloc[-1]
+            entry = float(np.asarray(df['Close'].squeeze().iloc[-1]).flat[0])
             if coin in self.active_positions:
                 pos = self.active_positions[coin]
                 if sig == 1:
